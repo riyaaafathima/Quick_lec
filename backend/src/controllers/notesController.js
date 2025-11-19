@@ -5,7 +5,7 @@ const generateNotes=(req,res)=>{
 const{videoUrl,title,template}=req.body
 
 const videoId=extractVideoId(videoUrl)
-
+      
 
 if (!videoUrl||!template?.name||!title) {
 
