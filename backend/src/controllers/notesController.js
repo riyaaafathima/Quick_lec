@@ -1,6 +1,7 @@
 
 
 const Notes=require('../models/noteModel')
+
 const generateNotes=(req,res)=>{
 const{videoUrl,title,template}=req.body
 
