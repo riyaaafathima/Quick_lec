@@ -1,4 +1,4 @@
-const fetchTranscript=require('./fetchTranscript')
+// const fetchTranscript=require('./fetchTranscript')
 
 const extractVideoId=(url)=>{
     try {
@@ -8,3 +8,5 @@ const extractVideoId=(url)=>{
         return null
     }
 }
+
+module.exports= extractVideoId;

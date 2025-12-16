@@ -1,52 +1,77 @@
+const fetchTranscript = require("../utils/fetchTranscript");
+const extractVideoId = require("../utils/extractVideoid");
+const buildPrompt = require("../utils/buildPrompt");
 
+const Notes = require("../models/noteModel");
+const generateNotesFromAi = require("../utils/geminiAiClient");
 
-const Notes=require('../models/noteModel')
+const generateNotes = (req, res) => {
+  const { videoUrl, title, template } = req.body;
 
-const generateNotes=(req,res)=>{
-const{videoUrl,title,template}=req.body
+  const videoId = extractVideoId(videoUrl);
 
-const videoId=extractVideoId(videoUrl)
-      
+  console.log("VIDEO ID:", videoId);
+  if (!videoUrl || !template?.name || !title) {
+    return res.status(400).json({ message: "bruh give me this data" });
+  }
 
-if (!videoUrl||!template?.name||!title) {
+  return res.status(200).json({ message: "notes are hereee" });
+};
 
-return res.status(400).json({message:'bruh give me this data'})
-}
+const createNotes = async (req, res) => {
+  try {
+    const { title, content, videoUrl, manualTranscript, templateType } =
+      req.body;
 
+    let transcript;
 
-return res.status(200).json({message:'notes are hereee'})
-}
+    if (manualTranscript) {
+      // Case B: user provided their own text
+      transcript = manualTranscript;
+    } else {
+      // Case A: extract automatically
+      const videoId = extractVideoId(videoUrl);
 
-const createNotes= async(req,res)=>{
-   try {
-     const {title,content,templateType}=req.body
+      if (!videoId) {
+        return res.status(400).json({ message: "Invalid YouTube URL bruh 😭" });
+      }
 
-
-    if (!title||!content) {
-        return res.status(400).json({message:'bruh how can i create ur note without these two🫤'})
+      transcript = await fetchTranscript(videoId);
     }
-    if(templateType&&!templateType.name){
-       return res.status(400).json('it should has name')
+
+    if (!transcript) {
+      return res.status(400).json({ message: "Transcript unavailable 😩" });
     }
-    const newNote= await Notes.create({
-        title,
-        content,
-        templateType:templateType||null
+
+    // TODO: send transcript → AI → create summary/notes
+    // (we'll implement this next)
+    console.log("FINAL TRANSCRIPT:", transcript);
+
+    const prompt = buildPrompt({
+      transcript,
+      title,
+      templateType,
     });
 
+    const aiNotes = await generateNotesFromAi(prompt);
+    console.log("Ai generated NOTES====", aiNotes);
 
-    return res.status(200).json({message:'notes are done bruhh😚',
-        notes:newNote
-    })
+    const newNote = await Notes.create({
+      title,
+      templateType,
+      content: aiNotes,
+      userId: null,
+      videoUrl,
+    });
 
-    
-   } catch (error) {
-    console.log('something went wrong ',error);
-    
-    return res.status(500).json('server error')
-   }
-}
+    return res.status(201).json({
+      message: "Notes created successfully 🚀",
+      notes: newNote,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "server down bruhh 😭" });
+  }
+};
 
-
-
-module.exports= {generateNotes,createNotes}
+module.exports = { generateNotes, createNotes };
