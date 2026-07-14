@@ -1,0 +1,35 @@
+name: Node.js CI
+
+# Run this workflow whenever code is pushed to the main branch
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  backend-check:
+
+    # Create a temporary Ubuntu virtual machine
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+
+      # Download the repository
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Install Node.js
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # Install project dependencies
+      - name: Install Dependencies
+        run: npm install
+
+     

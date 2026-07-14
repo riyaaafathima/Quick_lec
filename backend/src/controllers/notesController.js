@@ -26,7 +26,6 @@ const createNotes = async (req, res) => {
     let transcript;
 
     if (manualTranscript) {
-      // Case B: user provided their own text
       transcript = manualTranscript;
     } else {
       // Case A: extract automatically
